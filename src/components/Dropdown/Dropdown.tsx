@@ -5,6 +5,8 @@ import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import { SxProps, Theme } from '@mui/material';
 
+import AppHelper from '../../helpers/app.helper';
+
 type DropdownProps = {
     sx: SxProps<Theme>;
     name: string;
@@ -45,7 +47,9 @@ const Dropdown: React.FC<DropdownProps> = ({
                 {
                     options &&
                     options.map((x: string, index: number) => (
-                        <MenuItem key={index} value={x}>{x}</MenuItem>
+                        <MenuItem key={index} value={x}>
+                            {AppHelper.stringCapitalize(x)}
+                        </MenuItem>
                     ))
                 }
             </Select>

@@ -3,13 +3,16 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
+
 import { Dropdown } from '../../../components';
 
 type TaskFilterProps = {
     searchText: string;
     activeStatus: string;
+    orderBy: string;
     onChangeSearch: Function;
     onChangeStatus: Function;
+    onChangeOrderBy: Function;
 };
 
 /**
@@ -20,11 +23,17 @@ type TaskFilterProps = {
 const TaskFilter: React.FC<TaskFilterProps> = ({
     searchText,
     activeStatus,
+    orderBy,
     onChangeSearch,
     onChangeStatus,
+    onChangeOrderBy,
 }: TaskFilterProps): JSX.Element => {
 
+    // status dropdown options
     const statusOptions = ["All", "To Do", "In Progress", "Done"];
+
+    // order by dropdown options
+    const orderByOptions = ["title", "status"];
 
     return (
         <Box
@@ -62,17 +71,37 @@ const TaskFilter: React.FC<TaskFilterProps> = ({
                     )
                 }}
             />
-            <Dropdown
+            <Box
                 sx={{
-                    width: 200,
-                    bgcolor: 'white'
-                }}
-                name="status"
-                label="Task Status"
-                options={statusOptions}
-                value={activeStatus}
-                onChange={(name: string, value: string) => onChangeStatus(value)}
-            />
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 2
+                }}>
+                <Dropdown
+                    sx={{
+                        width: 200,
+                        bgcolor: 'white'
+                    }}
+                    name="status"
+                    label="Task Status"
+                    options={statusOptions}
+                    value={activeStatus}
+                    onChange={(name: string, value: string) => onChangeStatus(value)}
+                />
+                <Dropdown
+                    sx={{
+                        width: 200,
+                        bgcolor: 'white'
+                    }}
+                    name="orderBy"
+                    label="Order BY"
+                    options={orderByOptions}
+                    value={orderBy}
+                    onChange={(name: string, value: string) => onChangeOrderBy(value)}
+                />
+            </Box>
         </Box>
     );
 };

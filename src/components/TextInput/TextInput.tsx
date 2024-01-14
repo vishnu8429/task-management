@@ -37,7 +37,7 @@ const TextInput: React.FC<TextInputProps> = ({
     onChange,
 }: TextInputProps): JSX.Element => {
 
-    const [showPassword, setShowPassword] = useState(type === "password" ? false : true);
+    const [showPassword, setShowPassword] = useState<boolean>(type === "password" ? false : true);
 
     return (
         <TextField

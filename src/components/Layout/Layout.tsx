@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { signOut } from 'firebase/auth';
 
 import { styled } from '@mui/material/styles';
@@ -6,10 +7,12 @@ import Box from '@mui/material/Box';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Avatar from '@mui/material/Avatar';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 
 import { auth, images } from '../../core';
-import { useEffect, useState } from 'react';
+import UserHelper from '../../helpers/user.helper';
 
 interface AppBarProps extends MuiAppBarProps {
     open?: boolean;
@@ -37,6 +40,7 @@ type LayoutProps = {
  */
 const Layout: React.FC<LayoutProps> = ({ children }: LayoutProps): JSX.Element => {
 
+    const [open, setOpen] = useState<boolean>(false);
     const [user, setUser] = useState({
         uid: "",
         displayName: "",
@@ -49,24 +53,16 @@ const Layout: React.FC<LayoutProps> = ({ children }: LayoutProps): JSX.Element =
     // handle logout
     const _handleLogout = () => {
         signOut(auth).then(() => {
+            UserHelper.deleteUser();
             window.location.href = "/";
         }).catch((error) => {
             // An error happened.
         });
     };
 
+    // handle user info on appbar
     useEffect(() => {
-        const userJson = localStorage.getItem('user');
-        const userData = userJson !== null
-            ? JSON.parse(userJson)
-            : {
-                uid: "",
-                displayName: "",
-                email: "",
-                phoneNumber: "",
-                photoURL: "",
-                accessToken: "",
-            };
+        const userData = UserHelper.getUser();
         setUser(userData);
     }, []);
 
@@ -90,18 +86,39 @@ const Layout: React.FC<LayoutProps> = ({ children }: LayoutProps): JSX.Element =
                             justifyContent: 'center',
                             alignItems: 'center',
                             gap: 1,
+                            pr: 2
                         }}>
                         <Avatar src={images.avatar} alt="Profile" />
                         <Typography
                             sx={{
-                                color: 'white',
                                 fontWeight: 'bold',
-                                cursor: 'pointer'
+                                textTransform: 'capitalize',
+                                cursor: 'pointer',
                             }}
-                            onClick={() => _handleLogout()}
-                        >{user.displayName}
-                            Logout
+                            onClick={() => setOpen(true)}
+                        >
+                            {user.displayName}
                         </Typography>
+                        <Menu
+                            open={open}
+                            onClose={() => setOpen(false)}
+                            anchorOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
+                            sx={{
+                                mt: '45px',
+                                width: '250px',
+                                minWidth: '250px'
+                            }}
+                        >
+                            <MenuItem onClick={() => setOpen(false)}>Profile</MenuItem>
+                            <MenuItem onClick={() => _handleLogout()}>Logout</MenuItem>
+                        </Menu>
                     </Box>
                 </Toolbar>
             </AppBar>

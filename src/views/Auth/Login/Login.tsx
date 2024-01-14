@@ -13,8 +13,9 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
 import { routes, images, auth } from '../../../core';
-import toastify from '../../../helpers/toastify';
 import { Loader, TextInput } from '../../../components';
+import UserHelper from '../../../helpers/user.helper';
+import toastify from '../../../helpers/toastify';
 
 /**
  * Login view
@@ -26,7 +27,7 @@ const Login = (): JSX.Element => {
     const history = useHistory();
 
     // handle loader
-    const [isLoading, setLoading] = useState(false);
+    const [isLoading, setLoading] = useState<boolean>(false);
 
     // formik initial values
     const initialValues = {
@@ -50,14 +51,7 @@ const Login = (): JSX.Element => {
                 setLoading(false);
 
                 const user: any = userCredential.user;
-                localStorage.setItem("user", JSON.stringify({
-                    uid: user.uid,
-                    displayName: user.displayName,
-                    email: user.email,
-                    phoneNumber: user.phoneNumber,
-                    photoURL: user.photoURL,
-                    accessToken: user.accessToken,
-                }));
+                UserHelper.saveUser(user);
 
                 // redirect to home screen
                 history.push("/home");

@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import { auth, routes } from './core';
 import { Loader, NotFound } from './components';
+import UserHelper from './helpers/user.helper';
 
 // application routes
 const Login = lazy(() => import('./views/Auth/Login/Login'));
@@ -18,23 +19,25 @@ const Home = lazy(() => import('./views/Home/Home'));
  * @returns 
  */
 const App = () => {
-  // fallback={<div className='loader-text'>Loading</div>}
 
   // handle page loading
-  const [isLoading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState<boolean>(true);
 
   // handle default route
-  const [isUserLoggedIn, setUserLoggedIn] = useState(false);
+  const [isUserLoggedIn, setUserLoggedIn] = useState<boolean>(false);
 
   // check user loggedin status
   useEffect(() => {
     setLoading(true);
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, (user: any) => {
       setLoading(false);
       if (user) {
         const uid = user.uid;
         if (uid !== null) {
           setUserLoggedIn(true);
+          UserHelper.saveUser(user);
+        } else {
+          UserHelper.deleteUser();
         }
       }
     });
@@ -50,7 +53,7 @@ const App = () => {
       <ToastContainer />
 
       {/* app routes */}
-      <Suspense>
+      <Suspense fallback={<Loader />}>
         <Switch>
           {/* auth routes */}
           <Route exact path="/" component={() => isUserLoggedIn ? <Home /> : <Login />} />

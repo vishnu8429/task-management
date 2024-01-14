@@ -15,8 +15,8 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
 import { routes, images, auth } from '../../../core';
-import toastify from '../../../helpers/toastify';
 import { Loader, TextInput } from '../../../components';
+import toastify from '../../../helpers/toastify';
 
 /**
  * Signup view
@@ -29,16 +29,16 @@ const Signup = (): JSX.Element => {
     const passwordRegExp = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
 
     // handle loader
-    const [isLoading, setLoading] = useState(false);
+    const [isLoading, setLoading] = useState<boolean>(false);
 
     // avatar
-    // const [avatar, setAvatar] = useState("");
+    // const [avatar, setAvatar] = useState<string>("");
 
     // State to store uploaded file
-    // const [file, setFile] = useState<any>("");
+    // const [file, setFile] = useState<any><string>("");
 
     // handle upload progress
-    // const [progress, setProgress] = useState(0);
+    // const [progress, setProgress] = useState<number>(0);
 
     // formik initial values
     const [initialValues, setInitialValues] = useState({
@@ -63,7 +63,7 @@ const Signup = (): JSX.Element => {
             .email('Invalid email')
             .required('Required'),
         password: Yup.string()
-            .matches(passwordRegExp, { message: "Please create a stronger password" })
+            .matches(passwordRegExp, { message: "Create a password with a minimum of 6 characters, including at least 1 uppercase letter, 1 lowercase letter, and 1 numeric digit." })
             .required("Required"),
         confirmPassword: Yup.string()
             .oneOf([Yup.ref("password"), ""], "Passwords must match")
@@ -114,7 +114,6 @@ const Signup = (): JSX.Element => {
                 setLoading(false);
 
                 const user = userCredential.user;
-                // console.log(user);
 
                 // update user profile by add displayName and photoURL
                 updateProfile(user, {
@@ -138,50 +137,9 @@ const Signup = (): JSX.Element => {
             .catch((error) => {
                 setLoading(false);
 
-                // const errorCode = error.code;
-                // const errorMessage = error.message;
-                // console.log(errorCode, errorMessage);
-
                 // handle error
                 toastify("Oops! Something went wrong. Please try again", "ERROR");
             });
-
-        // try {
-        //     setLoading(true);
-
-        //     // todo
-        //     // check user is already exist to avoid duplication
-
-        //     const docRef = await addDoc(collection(db, "users"), {
-        //         firstName: data.firstName,
-        //         lastName: data.lastName,
-        //         image: avatar,
-        //         email: data.email,
-        //         password: data.password,
-        //     });
-
-        //     // handle success
-        //     if (docRef.id) {
-        //         toastify("Congratulations! Your account has been successfully created. Welcome aboard!", "SUCCESS");
-
-        //         setLoading(false);
-        //         setInitialValues({
-        //             firstName: "",
-        //             lastName: "",
-        //             email: "",
-        //             password: "",
-        //             confirmPassword: "",
-        //         });
-
-        //         setTimeout(() => {
-        //             window.location.href = routes.login;
-        //         }, 2500);
-        //     }
-        // } catch (e) {
-        //     // handle error
-        //     toastify("Oops! Something went wrong. Please try again", "ERROR");
-        //     setLoading(false);
-        // }
     };
 
     return (
@@ -257,10 +215,10 @@ const Signup = (): JSX.Element => {
                                         </Grid>
                                     </Grid>
                                     {/* <div>
-                                <input type="file" onChange={_onChangeAvatar} accept="/image/*" />
-                                <button onClick={onUploadAvatar}>Upload Avatar</button>
-                                <p>{progress} "% done"</p>
-                            </div> */}
+                                        <input type="file" onChange={_onChangeAvatar} accept="/image/*" />
+                                        <button onClick={onUploadAvatar}>Upload Avatar</button>
+                                        <p>{progress} "% done"</p>
+                                    </div> */}
                                     <TextInput
                                         name="email"
                                         label="Email"

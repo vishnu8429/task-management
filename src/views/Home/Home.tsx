@@ -1,44 +1,23 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
-import useDebounce from '../../helpers/debounce';
+import { auth, db } from '../../core';
 import { TaskType } from '../../schema/task';
-import { Layout, ConfirmDialog, EmptyCard } from '../../components';
+import useDebounce from '../../helpers/debounce';
+import UserHelper from '../../helpers/user.helper';
+import AppHelper from '../../helpers/app.helper';
+import toastify from '../../helpers/toastify';
+import { Layout, ConfirmDialog, EmptyCard, Loader } from '../../components';
 import CreateTask from './Create/CreateTask';
 import TaskFilter from './List/TaskFilter';
 import TaskList from './List/TaskList';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../../core';
-
-const mockData = [
-    {
-        id: 1,
-        title: "Buy groceries",
-        description: "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as",
-        status: "To Do",
-    },
-    {
-        id: 2,
-        title: "Car",
-        description: "In publishing and graphic design, ",
-        status: "In Progress",
-    },
-    {
-        id: 3,
-        title: "Do Exercise",
-        description: "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as",
-        status: "Done",
-    },
-    {
-        id: 4,
-        title: "Do Shopping",
-        description: "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as",
-        status: "In Progress",
-    }
-];
 
 /**
  * Home
@@ -47,16 +26,37 @@ const mockData = [
  */
 const Home = (): JSX.Element => {
 
+    // handle loader
+    const [isLoading, setLoading] = useState<boolean>(true);
+
+    // active or logged user id
+    const [userId, setUserId] = useState<string>("");
+
+    // handle create or edit modal
+    const [modalVariant, setModalVariant] = useState<string>("create");
     const [openModal, setOpenModal] = useState<boolean>(false);
+
+    // handle delete confirm dialog
     const [openConfirm, setOpenConfirm] = useState<boolean>(false);
+
+    // handle search text
     const [searchText, setSearchText] = useState<string>("");
+
+    // handle status dropdown
     const [activeStatus, setActiveStatus] = useState<string>("All");
-    const [taskList, setTaskList] = useState<TaskType[]>(mockData);
+
+    // handle order by dropdown
+    const [orderBy, setOrderBy] = useState<string>("title");
+
+    // state for task
+    const [taskList, setTaskList] = useState<TaskType[]>([]);
+    const [taskListTemp, setTaskListTemp] = useState<TaskType[]>([]);
     const [task, setTask] = useState<TaskType>({
         id: "",
         title: "",
         description: "",
         status: "",
+        dateCreated: new Date(),
     });
 
     // handle search change
@@ -73,69 +73,170 @@ const Home = (): JSX.Element => {
         _onSearch(value, "status");
     };
 
+    // handle order by change
+    const _onChangeOrderBy = (value: string) => {
+        setOrderBy(value);
+        setTaskList(AppHelper.sortArray(taskList, value));
+        setTaskListTemp(AppHelper.sortArray(taskListTemp, value));
+    };
+
     // handle search
+    // to improve the performance avoid api calls here
+    // instead save the task list in temp and sort 
     const _onSearch = (value: string, variant: string) => {
+        let updatedTaskList = taskListTemp;
+
+        // handle search input change
         if (variant === "search") {
             if (value.length > 0) {
-                const _searchText = value.toLowerCase();
-                const _sortTaskList = taskList.filter((x: any) => x.title.toLowerCase().includes(_searchText) || x.status.toLowerCase().includes(_searchText));
-                setTaskList(_sortTaskList);
-            } else {
-                setTaskList(mockData);
+                if (activeStatus !== "All") {
+                    updatedTaskList = taskListTemp.filter((x: any) => x.status.includes(activeStatus) && x.title.toLowerCase().includes(value.toLowerCase()));
+                } else {
+                    updatedTaskList = taskListTemp.filter((x: any) => x.title.toLowerCase().includes(value.toLowerCase()) || x.status.toLowerCase().includes(value.toLowerCase()));
+                }
             }
-        } else {
+        }
+
+        // handle status dropdown change
+        else {
             if (value !== "All") {
-                const _sortTaskList = mockData.filter((x: any) => x.status.includes(value));
-                setTaskList(_sortTaskList);
-            } else {
-                setTaskList(mockData);
+                if (searchText.length > 0) {
+                    updatedTaskList = taskListTemp.filter((x: any) => x.status.includes(value) && x.title.toLowerCase().includes(searchText.toLowerCase()));
+                } else {
+                    updatedTaskList = taskListTemp.filter((x: any) => x.status.includes(value));
+                }
             }
+        }
+
+        updatedTaskList = AppHelper.sortArray(updatedTaskList, orderBy);
+        setTaskList(updatedTaskList);
+    };
+
+    // fetch all task
+    const _fetchTask = async (uid?: string) => {
+        try {
+            setLoading(true);
+
+            const collectionRef = collection(db, "task");
+            const condition = query(collectionRef, where("userId", "==", uid));
+            const docRefs = await getDocs(condition);
+
+            let res: any = [];
+
+            docRefs.forEach(task => {
+                res.push({
+                    id: task.id,
+                    ...task.data()
+                });
+            });
+
+            res = AppHelper.sortArray(res, orderBy);
+
+            setLoading(false);
+            setTaskList(res);
+            setTaskListTemp(res);
+        } catch (e) {
+            console.log("Failed to fetch task list");
         }
     };
 
     // handle debounce
     const _onDebounce = useDebounce(_onSearch, 1000);
 
+    // rest task object
+    const _resetTask = () => {
+        setTask({
+            id: "",
+            title: "",
+            description: "",
+            status: "",
+            dateCreated: new Date(),
+        });
+    };
+
     // handle save
-    const _onSaveTask = (data: TaskType) => {
-        setTask(data);
-        setOpenModal(false);
+    const _onSaveTask = async (data: TaskType) => {
+        try {
+            setTask(data);
+            setOpenModal(false);
+
+            const collectionRef = collection(db, "task");
+            await addDoc(collectionRef, {
+                userId: userId,
+                title: data.title,
+                description: data.description,
+                status: data.status,
+                dateCreated: data.dateCreated
+            });
+
+            toastify("New task have created", "SUCCESS");
+
+            _resetTask();
+
+            // fetch the all task or concat the newly created
+            _fetchTask(userId);
+        } catch (e) {
+            toastify("Failed to create new task", "ERROR");
+        }
     };
 
     // handle edit
-    const _onEditTask = (data: TaskType) => {
-        setTask(data);
-        setOpenModal(true);
+    const _onEditTask = async (data: TaskType) => {
+        try {
+            setOpenModal(false);
+
+            const docId: any = data.id;
+            const docRef = doc(db, "task", docId);
+            await updateDoc(docRef, {
+                title: data.title,
+                description: data.description,
+                status: data.status,
+            });
+
+            toastify("Task updated successfully", "SUCCESS");
+
+            _resetTask();
+
+            // fetch the all task or update the edit task one only
+            _fetchTask(data.userId);
+        } catch (e) {
+            toastify("Failed to update task", "ERROR");
+        }
     };
 
     // handle delete
-    // update the status
-    const _onDeleteTask = (data: TaskType) => {
-        console.log('data', data);
-        setTask(data);
-        setOpenConfirm(true);
+    const _onDeleteTask = async () => {
+        try {
+            setOpenConfirm(false);
+
+            const docId: any = task.id;
+            const docRef = doc(db, "task", docId);
+            await deleteDoc(docRef);
+
+            toastify("Task deleted successfully", "SUCCESS");
+
+            _resetTask();
+
+            // fetch the all task or remove the task from list
+            _fetchTask(task.userId);
+        } catch (e) {
+            toastify("Failed to delete task", "ERROR");
+        }
     };
 
-    // handle delete
-    // api call here
-    const _onConfirmDelete = () => {
-        setOpenConfirm(false);
-        const _sortTaskList = taskList.filter((x: any) => x.id !== task.id);
-        setTaskList(_sortTaskList);
-    };
-
+    // check user loggedin status
     useEffect(() => {
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, (user: any) => {
             if (user) {
-                // User is signed in, see docs for a list of available properties
-                // https://firebase.google.com/docs/reference/js/firebase.User
                 const uid = user.uid;
-                // ...
-                console.log("uid", uid);
-            } else {
-                // User is signed out
-                // ...
-                console.log("user is logged out");
+                if (uid !== null) {
+                    setUserId(user.uid);
+                    UserHelper.saveUser(user);
+                    _fetchTask(user.uid);
+                } else {
+                    UserHelper.deleteUser();
+                    window.location.href = "/";
+                }
             }
         });
     }, []);
@@ -147,47 +248,62 @@ const Home = (): JSX.Element => {
                 {/* page header */}
                 <Header
                     title={process.env.REACT_APP_NAME}
-                    onClick={() => setOpenModal(!openModal)}
+                    onClick={() => {
+                        setOpenModal(!openModal);
+                        setModalVariant("create");
+                    }}
                 />
 
                 {/* task filter */}
                 <TaskFilter
                     searchText={searchText}
                     activeStatus={activeStatus}
+                    orderBy={orderBy}
                     onChangeSearch={_onChangeSearch}
                     onChangeStatus={_onChangeStatus}
+                    onChangeOrderBy={_onChangeOrderBy}
                 />
 
                 {/* task list */}
                 {
-                    taskList &&
-                        taskList.length === 0
-                        ? <EmptyCard
-                            title="Task"
-                            message="No task items found"
-                        />
-                        : <TaskList
-                            data={taskList}
-                            onEdit={_onEditTask}
-                            onDelete={_onDeleteTask}
-                        />
+                    isLoading
+                        ? <Loader />
+                        : taskList &&
+                            taskList.length === 0
+                            ? <EmptyCard
+                                title="Task"
+                                message="No task items found"
+                            />
+                            : <TaskList
+                                data={taskList}
+                                onEdit={(data: TaskType) => {
+                                    setTask(data);
+                                    setOpenModal(true);
+                                    setModalVariant("edit");
+                                }}
+                                onDelete={(data: TaskType) => {
+                                    console.log('data', data);
+                                    setTask(data);
+                                    setOpenConfirm(true);
+                                }}
+                            />
                 }
 
                 {/* create new task */}
                 <CreateTask
                     open={openModal}
-                    variant='create'
+                    variant={modalVariant}
                     data={task}
                     setOpen={() => setOpenModal(!openModal)}
                     onClose={() => setOpenModal(false)}
-                    onSave={_onSaveTask}
+                    onSave={modalVariant === "create" ? _onSaveTask : _onEditTask}
                 />
 
                 {/* confirm dialog*/}
                 <ConfirmDialog
                     open={openConfirm}
                     onCancel={() => setOpenConfirm(false)}
-                    onConfirm={() => _onConfirmDelete()}
+                    onConfirm={() => _onDeleteTask()}
                 />
             </Container>
         </Layout>
