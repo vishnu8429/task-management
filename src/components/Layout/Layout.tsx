@@ -3,12 +3,10 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
+import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
-import { Avatar } from '@mui/material';
+
 import { images } from '../../core';
-// import IconButton from '@mui/material/IconButton';
-// import Badge from '@mui/material/Badge';
-// import NotificationsIcon from '@mui/icons-material/Notifications';
 
 interface AppBarProps extends MuiAppBarProps {
     open?: boolean;
@@ -35,6 +33,12 @@ type LayoutProps = {
  * @returns 
  */
 const Layout: React.FC<LayoutProps> = ({ children }: LayoutProps): JSX.Element => {
+
+    // handle logout
+    const _handleLogout = () => {
+        window.location.href = "/";
+    };
+
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
@@ -57,13 +61,17 @@ const Layout: React.FC<LayoutProps> = ({ children }: LayoutProps): JSX.Element =
                             gap: 1,
                         }}>
                         <Avatar src={images.avatar} alt="Profile" />
-                        <Typography sx={{ color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Logout</Typography>
+                        <Typography
+                            sx={{
+                                color: 'white',
+                                fontWeight: 'bold',
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => _handleLogout()}
+                        >
+                            Logout
+                        </Typography>
                     </Box>
-                    {/* <IconButton color="inherit">
-                        <Badge badgeContent={4} color="secondary">
-                            <NotificationsIcon />
-                        </Badge>
-                    </IconButton> */}
                 </Toolbar>
             </AppBar>
             <Box

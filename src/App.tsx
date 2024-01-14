@@ -10,9 +10,15 @@ const Login = lazy(() => import('./views/Auth/Login/Login'));
 const Signup = lazy(() => import('./views/Auth/Signup/Signup'));
 const Home = lazy(() => import('./views/Home/Home'));
 
+/**
+ * App
+ * 
+ * @returns 
+ */
 const App = () => {
+  // fallback={<div className='loader-text'>Loading</div>}
   return (
-    <Suspense fallback={<div className='loader-text'>Loading</div>}>
+    <Suspense>
       <Switch>
         {/* auth routes */}
         <Route exact path="/" component={() => <Login />} />
@@ -28,6 +34,5 @@ const App = () => {
     </Suspense>
   );
 };
-
 
 export default App;

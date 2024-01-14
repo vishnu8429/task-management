@@ -64,6 +64,9 @@ const TaskItem: React.FC<TaskItemProps> = ({
                 display: "flex",
                 flexDirection: 'column',
                 justifyContent: "space-between",
+                '@media (max-width: 480px)': {
+                    width: '100%'
+                }
             }}>
             <CardContent>
                 <Typography sx={{ fontSize: 18, fontWeight: 'bold' }}>{task.title}</Typography>

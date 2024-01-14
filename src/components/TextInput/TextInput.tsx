@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { IconButton, InputAdornment } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import TextField from '@mui/material/TextField';
 
 import './TextInput.scss';
@@ -8,7 +10,7 @@ import './TextInput.scss';
 type TextInputProps = {
     type?: string;
     multiline?: boolean;
-    rows?: number; 
+    rows?: number;
     name: string;
     label: string;
     placeholder?: string;
@@ -43,6 +45,7 @@ const TextInput: React.FC<TextInputProps> = ({
             multiline={multiline}
             rows={rows}
             margin="normal"
+            autoComplete="on"
             type={showPassword ? 'text' : 'password'}
             name={name}
             label={label}
@@ -51,9 +54,7 @@ const TextInput: React.FC<TextInputProps> = ({
             color={error ? "warning" : "primary"}
             helperText={error}
             value={value}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                onChange(name, event.target.value);
-            }}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => onChange(name, event.target.value)}
             InputProps={{
                 endAdornment: type === "password" && (
                     <InputAdornment position="end">

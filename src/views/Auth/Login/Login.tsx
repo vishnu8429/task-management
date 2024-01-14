@@ -83,7 +83,12 @@ const Login = (): JSX.Element => {
                     }}
                 >
                     {(formikProps) => (
-                        <Box component="form" onSubmit={formikProps.handleSubmit} noValidate sx={{ mt: 1 }}>
+                        <Box
+                            noValidate
+                            sx={{ mt: 1 }}
+                            component="form"
+                            onSubmit={formikProps.handleSubmit}
+                        >
                             <TextInput
                                 name="username"
                                 label="Username"
@@ -100,10 +105,14 @@ const Login = (): JSX.Element => {
                                 onChange={formikProps.setFieldValue}
                             />
                             <Button
-                                type="submit"
                                 fullWidth
+                                type="submit"
                                 variant="contained"
-                                sx={{ mt: 3, mb: 2 }}
+                                sx={{
+                                    mt: 3,
+                                    mb: 2,
+                                    p: 1
+                                }}
                             >
                                 Login
                             </Button>
@@ -118,6 +127,6 @@ const Login = (): JSX.Element => {
             </Box>
         </Container>
     );
-}
+};
 
 export default Login;

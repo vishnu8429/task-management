@@ -100,8 +100,13 @@ const Signup = (): JSX.Element => {
                     }}
                 >
                     {(formikProps) => (
-                        <Box component="form" onSubmit={formikProps.handleSubmit} noValidate sx={{ mt: 1 }}>
-                            <Grid container spacing={2}>
+                        <Box
+                            noValidate
+                            sx={{ mt: 1 }}
+                            component="form"
+                            onSubmit={formikProps.handleSubmit}
+                        >
+                            <Grid container spacing={1}>
                                 <Grid item xs={12} sm={6}>
                                     <TextInput
                                         name="firstName"
@@ -145,10 +150,14 @@ const Signup = (): JSX.Element => {
                                 onChange={formikProps.setFieldValue}
                             />
                             <Button
-                                type="submit"
                                 fullWidth
+                                type="submit"
                                 variant="contained"
-                                sx={{ mt: 3, mb: 2 }}
+                                sx={{
+                                    mt: 3,
+                                    mb: 2,
+                                    p: 1
+                                }}
                             >
                                 Signup
                             </Button>
@@ -163,6 +172,6 @@ const Signup = (): JSX.Element => {
             </Box>
         </Container>
     );
-}
+};
 
 export default Signup;

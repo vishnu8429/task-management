@@ -4,12 +4,12 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
-import { TaskType } from '../../schema/task';
 import useDebounce from '../../helpers/debounce';
+import { TaskType } from '../../schema/task';
 import { Layout, ConfirmDialog, EmptyCard } from '../../components';
+import CreateTask from './Create/CreateTask';
 import TaskFilter from './List/TaskFilter';
 import TaskList from './List/TaskList';
-import CreateTask from './Create/CreateTask';
 
 const mockData = [
     {
@@ -127,20 +127,10 @@ const Home = (): JSX.Element => {
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
 
                 {/* page header */}
-                <Box
-                    sx={{
-                        p: '15px',
-                        mb: 3,
-                        boxShadow: 2,
-                        borderRadius: 2,
-                        bgcolor: 'white',
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                    }}>
-                    <Typography color="primary" sx={{ fontSize: 20, fontWeight: 'bold' }}>Task Management</Typography>
-                    <Button variant="contained" onClick={() => setOpenModal(!openModal)}>Create</Button>
-                </Box>
+                <Header
+                    title="Task Management"
+                    onClick={() => setOpenModal(!openModal)}
+                />
 
                 {/* task filter */}
                 <TaskFilter
@@ -183,6 +173,31 @@ const Home = (): JSX.Element => {
                 />
             </Container>
         </Layout>
+    );
+};
+
+/**
+ * Page header 
+ * 
+ * @param { title, onClick } 
+ * @returns 
+ */
+const Header = ({ title, onClick }: any) => {
+    return (
+        <Box
+            sx={{
+                p: '15px',
+                mb: 3,
+                boxShadow: 2,
+                borderRadius: 2,
+                bgcolor: 'white',
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+            }}>
+            <Typography color="primary" sx={{ fontSize: 20, fontWeight: 'bold' }}>{title}</Typography>
+            <Button variant="contained" onClick={onClick}>Create</Button>
+        </Box>
     );
 };
 

@@ -33,13 +33,17 @@ const TaskFilter: React.FC<TaskFilterProps> = ({
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                gap: 5
+                flexWrap: "wrap",
+                gap: 2
             }}>
             <TextField
                 sx={{
-                    m: 1,
                     minWidth: 450,
-                    bgcolor: 'white'
+                    bgcolor: 'white',
+                    '@media (max-width: 480px)': {
+                        minWidth: '100%',
+                        mb: 2
+                    }
                 }}
                 color="primary"
                 label="Search by title, status"
@@ -60,7 +64,6 @@ const TaskFilter: React.FC<TaskFilterProps> = ({
             />
             <Dropdown
                 sx={{
-                    m: 1,
                     width: 200,
                     bgcolor: 'white'
                 }}
