@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 
 import { styled } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Avatar from '@mui/material/Avatar';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import LogoutIcon from '@mui/icons-material/Logout';
 import Typography from '@mui/material/Typography';
 
-import { auth, images } from '../../core';
+import { auth, images, routes } from '../../core';
 import UserHelper from '../../helpers/user.helper';
 
 interface AppBarProps extends MuiAppBarProps {
@@ -39,6 +43,8 @@ type LayoutProps = {
  * @returns 
  */
 const Layout: React.FC<LayoutProps> = ({ children }: LayoutProps): JSX.Element => {
+
+    const history = useHistory();
 
     const [open, setOpen] = useState<boolean>(false);
     const [user, setUser] = useState({
@@ -116,8 +122,18 @@ const Layout: React.FC<LayoutProps> = ({ children }: LayoutProps): JSX.Element =
                                 minWidth: '250px'
                             }}
                         >
-                            <MenuItem onClick={() => setOpen(false)}>Profile</MenuItem>
-                            <MenuItem onClick={() => _handleLogout()}>Logout</MenuItem>
+                            <MenuItem
+                                sx={{ display: 'flex', gap: 1 }}
+                                onClick={() => history.push(routes.profile)}
+                            >
+                                <PersonOutlineIcon /> Profile
+                            </MenuItem>
+                            <MenuItem
+                                sx={{ display: 'flex', gap: 1 }}
+                                onClick={() => _handleLogout()}
+                            >
+                                <LogoutIcon />Logout
+                            </MenuItem>
                         </Menu>
                     </Box>
                 </Toolbar>
@@ -128,10 +144,25 @@ const Layout: React.FC<LayoutProps> = ({ children }: LayoutProps): JSX.Element =
                     flexGrow: 1,
                     height: '100vh',
                     overflow: 'auto',
+                    maxWidth: '100vw',
                 }}
             >
                 <Toolbar />
-                {children}
+                <Container
+                    maxWidth="lg"
+                    sx={{
+                        mt: 4,
+                        mb: 4,
+                        '@media (min-width: 480px)': {
+                            maxWidth: '1600px',
+                        },
+                        '@media (max-width: 480px)': {
+                            mt: 2,
+                        }
+                    }}
+                >
+                    {children}
+                </Container>
             </Box>
         </Box>
     );

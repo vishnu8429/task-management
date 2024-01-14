@@ -36,8 +36,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>No</Button>
                 <Button onClick={onConfirm} autoFocus>Yes</Button>
+                <Button color='secondary' onClick={onCancel}>No</Button>
             </DialogActions>
         </Dialog>
     );

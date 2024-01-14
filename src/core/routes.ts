@@ -3,6 +3,9 @@ export const routes = {
     login: "/login",
     signup: "/signup",
 
-    // task management routes
-    home: "/home"
+    // task management route
+    home: "/home",
+
+    // profile route
+    profile: "/profile",
 };

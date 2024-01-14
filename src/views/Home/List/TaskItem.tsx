@@ -57,9 +57,9 @@ const TaskItem: React.FC<TaskItemProps> = ({
         <Card
             variant="outlined"
             sx={{
-                width: '370px',
+                width: '375px',
                 boxShadow: 2,
-                borderRadius: 2,
+                borderRadius: 1,
                 border: 'none',
                 display: "flex",
                 flexDirection: 'column',
@@ -92,14 +92,14 @@ const TaskItem: React.FC<TaskItemProps> = ({
                 }}>
                 <Button
                     size="small"
-                    color="info"
+                    color="primary"
                     onClick={() => onEdit(task)}
                 >
                     Edit
                 </Button>
                 <Button
                     size="small"
-                    color="error"
+                    color="secondary"
                     onClick={() => onDelete(task)}
                 >
                     Delete

@@ -9,9 +9,15 @@ import { Loader, NotFound } from './components';
 import UserHelper from './helpers/user.helper';
 
 // application routes
+// auth routes
 const Login = lazy(() => import('./views/Auth/Login/Login'));
 const Signup = lazy(() => import('./views/Auth/Signup/Signup'));
+
+// home route
 const Home = lazy(() => import('./views/Home/Home'));
+
+// profile route
+const Profile = lazy(() => import('./views/Profile/Profile'));
 
 /**
  * App
@@ -60,8 +66,11 @@ const App = () => {
           <Route exact path={routes.login} component={() => <Login />} />
           <Route exact path={routes.signup} component={() => <Signup />} />
 
-          {/* home routes */}
+          {/* home route */}
           <Route exact path={routes.home} component={() => <Home />} />
+
+          {/* profile route */}
+          <Route exact path={routes.profile} component={() => <Profile />} />
 
           {/* Error route */}
           <Route exact path="*" component={() => <NotFound />} />

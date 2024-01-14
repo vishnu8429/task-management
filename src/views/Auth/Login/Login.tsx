@@ -54,7 +54,7 @@ const Login = (): JSX.Element => {
                 UserHelper.saveUser(user);
 
                 // redirect to home screen
-                history.push("/home");
+                history.push(routes.home);
             })
             .catch((error) => {
                 setLoading(false);

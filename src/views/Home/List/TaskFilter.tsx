@@ -74,14 +74,14 @@ const TaskFilter: React.FC<TaskFilterProps> = ({
             <Box
                 sx={{
                     display: "flex",
-                    justifyContent: "space-between",
+                    justifyContent: "space-around",
                     alignItems: "center",
                     flexWrap: "wrap",
                     gap: 2
                 }}>
                 <Dropdown
                     sx={{
-                        width: 200,
+                        width: 180,
                         bgcolor: 'white'
                     }}
                     name="status"
@@ -92,7 +92,7 @@ const TaskFilter: React.FC<TaskFilterProps> = ({
                 />
                 <Dropdown
                     sx={{
-                        width: 200,
+                        width: 180,
                         bgcolor: 'white'
                     }}
                     name="orderBy"

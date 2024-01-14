@@ -7,6 +7,7 @@ import EmptyCard from "./EmptyCard/EmptyCard";
 import TextInput from "./TextInput/TextInput";
 import Dropdown from "./Dropdown/Dropdown";
 import Loader from "./Loader/Loader";
+import Breadcrumbs from "./Breadcrumbs/Breadcrumbs";
 
 export {
     Layout,
@@ -18,4 +19,5 @@ export {
     TextInput,
     Dropdown,
     Loader,
+    Breadcrumbs,
 };

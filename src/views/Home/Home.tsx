@@ -3,10 +3,8 @@ import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 
-import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 
 import { auth, db } from '../../core';
 import { TaskType } from '../../schema/task';
@@ -14,7 +12,7 @@ import useDebounce from '../../helpers/debounce';
 import UserHelper from '../../helpers/user.helper';
 import AppHelper from '../../helpers/app.helper';
 import toastify from '../../helpers/toastify';
-import { Layout, ConfirmDialog, EmptyCard, Loader } from '../../components';
+import { Layout, Loader, EmptyCard, ConfirmDialog, Breadcrumbs } from '../../components';
 import CreateTask from './Create/CreateTask';
 import TaskFilter from './List/TaskFilter';
 import TaskList from './List/TaskList';
@@ -243,69 +241,66 @@ const Home = (): JSX.Element => {
 
     return (
         <Layout>
-            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            {/* page header */}
+            <Header
+                title='Task'
+                onClick={() => {
+                    setOpenModal(!openModal);
+                    setModalVariant("create");
+                }}
+            />
 
-                {/* page header */}
-                <Header
-                    title={process.env.REACT_APP_NAME}
-                    onClick={() => {
-                        setOpenModal(!openModal);
-                        setModalVariant("create");
-                    }}
-                />
+            {/* task filter */}
+            <TaskFilter
+                searchText={searchText}
+                activeStatus={activeStatus}
+                orderBy={orderBy}
+                onChangeSearch={_onChangeSearch}
+                onChangeStatus={_onChangeStatus}
+                onChangeOrderBy={_onChangeOrderBy}
+            />
 
-                {/* task filter */}
-                <TaskFilter
-                    searchText={searchText}
-                    activeStatus={activeStatus}
-                    orderBy={orderBy}
-                    onChangeSearch={_onChangeSearch}
-                    onChangeStatus={_onChangeStatus}
-                    onChangeOrderBy={_onChangeOrderBy}
-                />
+            {/* task list */}
+            {
+                isLoading
+                    ? <Loader />
+                    : taskList &&
+                        taskList.length === 0
+                        ? <EmptyCard
+                            title="Task"
+                            message="No task items found"
+                        />
+                        : <TaskList
+                            data={taskList}
+                            onEdit={(data: TaskType) => {
+                                setTask(data);
+                                setOpenModal(true);
+                                setModalVariant("edit");
+                            }}
+                            onDelete={(data: TaskType) => {
+                                console.log('data', data);
+                                setTask(data);
+                                setOpenConfirm(true);
+                            }}
+                        />
+            }
 
-                {/* task list */}
-                {
-                    isLoading
-                        ? <Loader />
-                        : taskList &&
-                            taskList.length === 0
-                            ? <EmptyCard
-                                title="Task"
-                                message="No task items found"
-                            />
-                            : <TaskList
-                                data={taskList}
-                                onEdit={(data: TaskType) => {
-                                    setTask(data);
-                                    setOpenModal(true);
-                                    setModalVariant("edit");
-                                }}
-                                onDelete={(data: TaskType) => {
-                                    console.log('data', data);
-                                    setTask(data);
-                                    setOpenConfirm(true);
-                                }}
-                            />
-                }
+            {/* create new task */}
+            <CreateTask
+                open={openModal}
+                variant={modalVariant}
+                data={task}
+                setOpen={() => setOpenModal(!openModal)}
+                onClose={() => setOpenModal(false)}
+                onSave={modalVariant === "create" ? _onSaveTask : _onEditTask}
+            />
 
-                {/* create new task */}
-                <CreateTask
-                    open={openModal}
-                    variant={modalVariant}
-                    data={task}
-                    setOpen={() => setOpenModal(!openModal)}
-                    onClose={() => setOpenModal(false)}
-                    onSave={modalVariant === "create" ? _onSaveTask : _onEditTask}
-                />
-
-                {/* confirm dialog*/}
-                <ConfirmDialog
-                    open={openConfirm}
-                    onCancel={() => setOpenConfirm(false)}
-                    onConfirm={() => _onDeleteTask()}
-                />
-            </Container>
+            {/* confirm dialog*/}
+            <ConfirmDialog
+                open={openConfirm}
+                onCancel={() => setOpenConfirm(false)}
+                onConfirm={() => _onDeleteTask()}
+            />
         </Layout>
     );
 };
@@ -323,13 +318,13 @@ const Header = ({ title, onClick }: any) => {
                 p: '15px',
                 mb: 3,
                 boxShadow: 2,
-                borderRadius: 2,
+                borderRadius: 1,
                 bgcolor: 'white',
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
             }}>
-            <Typography color="primary" sx={{ fontSize: 20, fontWeight: 'bold' }}>{title}</Typography>
+            <Breadcrumbs title={title} />
             <Button variant="contained" onClick={onClick}>Create</Button>
         </Box>
     );
