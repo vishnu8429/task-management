@@ -1,3 +1,5 @@
+import { signOut } from 'firebase/auth';
+
 import { styled } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -6,7 +8,8 @@ import Toolbar from '@mui/material/Toolbar';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 
-import { images } from '../../core';
+import { auth, images } from '../../core';
+import { useEffect, useState } from 'react';
 
 interface AppBarProps extends MuiAppBarProps {
     open?: boolean;
@@ -34,10 +37,38 @@ type LayoutProps = {
  */
 const Layout: React.FC<LayoutProps> = ({ children }: LayoutProps): JSX.Element => {
 
+    const [user, setUser] = useState({
+        uid: "",
+        displayName: "",
+        email: "",
+        phoneNumber: "",
+        photoURL: "",
+        accessToken: "",
+    })
+
     // handle logout
     const _handleLogout = () => {
-        window.location.href = "/";
+        signOut(auth).then(() => {
+            window.location.href = "/";
+        }).catch((error) => {
+            // An error happened.
+        });
     };
+
+    useEffect(() => {
+        const userJson = localStorage.getItem('user');
+        const userData = userJson !== null
+            ? JSON.parse(userJson)
+            : {
+                uid: "",
+                displayName: "",
+                email: "",
+                phoneNumber: "",
+                photoURL: "",
+                accessToken: "",
+            };
+        setUser(userData);
+    }, []);
 
     return (
         <Box sx={{ display: 'flex' }}>
@@ -51,7 +82,7 @@ const Layout: React.FC<LayoutProps> = ({ children }: LayoutProps): JSX.Element =
                         noWrap
                         sx={{ flexGrow: 1 }}
                     >
-                        Task Management
+                        {process.env.REACT_APP_NAME}
                     </Typography>
                     <Box
                         sx={{
@@ -68,7 +99,7 @@ const Layout: React.FC<LayoutProps> = ({ children }: LayoutProps): JSX.Element =
                                 cursor: 'pointer'
                             }}
                             onClick={() => _handleLogout()}
-                        >
+                        >{user.displayName}
                             Logout
                         </Typography>
                     </Box>

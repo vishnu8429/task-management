@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
@@ -10,8 +12,9 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
-import { routes, images } from '../../../core';
-import { TextInput } from '../../../components';
+import { routes, images, auth } from '../../../core';
+import toastify from '../../../helpers/toastify';
+import { Loader, TextInput } from '../../../components';
 
 /**
  * Login view
@@ -21,6 +24,9 @@ import { TextInput } from '../../../components';
 const Login = (): JSX.Element => {
 
     const history = useHistory();
+
+    // handle loader
+    const [isLoading, setLoading] = useState(false);
 
     // formik initial values
     const initialValues = {
@@ -38,8 +44,28 @@ const Login = (): JSX.Element => {
 
     // do login
     const _doLogin = (data: any) => {
-        console.log('data', data);
-        history.push("/home");
+        setLoading(true);
+        signInWithEmailAndPassword(auth, data.username, data.password)
+            .then((userCredential) => {
+                setLoading(false);
+
+                const user: any = userCredential.user;
+                localStorage.setItem("user", JSON.stringify({
+                    uid: user.uid,
+                    displayName: user.displayName,
+                    email: user.email,
+                    phoneNumber: user.phoneNumber,
+                    photoURL: user.photoURL,
+                    accessToken: user.accessToken,
+                }));
+
+                // redirect to home screen
+                history.push("/home");
+            })
+            .catch((error) => {
+                setLoading(false);
+                toastify("Invalid email or password", "ERROR");
+            });
     };
 
     return (
@@ -72,58 +98,64 @@ const Login = (): JSX.Element => {
                     alt="logo"
                 />
                 <Typography component="h1" variant="h5">Login</Typography>
-                <Formik
-                    initialValues={initialValues}
-                    validationSchema={validationSchema}
-                    onSubmit={(values, { setSubmitting }) => {
-                        setTimeout(() => {
-                            setSubmitting(false);
-                            _doLogin(values);
-                        }, 400);
-                    }}
-                >
-                    {(formikProps) => (
-                        <Box
-                            noValidate
-                            sx={{ mt: 1 }}
-                            component="form"
-                            onSubmit={formikProps.handleSubmit}
-                        >
-                            <TextInput
-                                name="username"
-                                label="Username"
-                                error={formikProps.errors.username}
-                                value={formikProps.values.username}
-                                onChange={formikProps.setFieldValue}
-                            />
-                            <TextInput
-                                type='password'
-                                name="password"
-                                label="Password"
-                                error={formikProps.errors.password}
-                                value={formikProps.values.password}
-                                onChange={formikProps.setFieldValue}
-                            />
-                            <Button
-                                fullWidth
-                                type="submit"
-                                variant="contained"
-                                sx={{
-                                    mt: 3,
-                                    mb: 2,
-                                    p: 1
-                                }}
-                            >
-                                Login
-                            </Button>
-                            <Box sx={{ textAlign: "center" }}>
-                                <Link href={routes.signup} variant="body2">
-                                    Don't have an account? Sign Up
-                                </Link>
-                            </Box>
+                {
+                    isLoading
+                        ? <Box sx={{ mt: 1, width: "350px" }}>
+                            <Loader />
                         </Box>
-                    )}
-                </Formik>
+                        : <Formik
+                            initialValues={initialValues}
+                            validationSchema={validationSchema}
+                            onSubmit={(values, { setSubmitting }) => {
+                                setTimeout(() => {
+                                    setSubmitting(false);
+                                    _doLogin(values);
+                                }, 400);
+                            }}
+                        >
+                            {(formikProps) => (
+                                <Box
+                                    noValidate
+                                    sx={{ mt: 1 }}
+                                    component="form"
+                                    onSubmit={formikProps.handleSubmit}
+                                >
+                                    <TextInput
+                                        name="username"
+                                        label="Username"
+                                        error={formikProps.errors.username}
+                                        value={formikProps.values.username}
+                                        onChange={formikProps.setFieldValue}
+                                    />
+                                    <TextInput
+                                        type='password'
+                                        name="password"
+                                        label="Password"
+                                        error={formikProps.errors.password}
+                                        value={formikProps.values.password}
+                                        onChange={formikProps.setFieldValue}
+                                    />
+                                    <Button
+                                        fullWidth
+                                        type="submit"
+                                        variant="contained"
+                                        sx={{
+                                            mt: 3,
+                                            mb: 2,
+                                            p: 1
+                                        }}
+                                    >
+                                        Login
+                                    </Button>
+                                    <Box sx={{ textAlign: "center" }}>
+                                        <Link href={routes.signup} variant="body2">
+                                            Don't have an account? Sign Up
+                                        </Link>
+                                    </Box>
+                                </Box>
+                            )}
+                        </Formik>
+                }
             </Box>
         </Container>
     );

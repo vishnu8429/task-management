@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -10,6 +10,8 @@ import { Layout, ConfirmDialog, EmptyCard } from '../../components';
 import CreateTask from './Create/CreateTask';
 import TaskFilter from './List/TaskFilter';
 import TaskList from './List/TaskList';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../../core';
 
 const mockData = [
     {
@@ -122,13 +124,29 @@ const Home = (): JSX.Element => {
         setTaskList(_sortTaskList);
     };
 
+    useEffect(() => {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in, see docs for a list of available properties
+                // https://firebase.google.com/docs/reference/js/firebase.User
+                const uid = user.uid;
+                // ...
+                console.log("uid", uid);
+            } else {
+                // User is signed out
+                // ...
+                console.log("user is logged out");
+            }
+        });
+    }, []);
+
     return (
         <Layout>
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
 
                 {/* page header */}
                 <Header
-                    title="Task Management"
+                    title={process.env.REACT_APP_NAME}
                     onClick={() => setOpenModal(!openModal)}
                 />
 

@@ -1,9 +1,11 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { Route, Switch } from "react-router-dom";
+import { ToastContainer } from 'react-toastify';
+import { onAuthStateChanged } from 'firebase/auth';
+import 'react-toastify/dist/ReactToastify.css';
 
-import { routes } from './core';
-import { NotFound } from './components';
-import './App.scss';
+import { auth, routes } from './core';
+import { Loader, NotFound } from './components';
 
 // application routes
 const Login = lazy(() => import('./views/Auth/Login/Login'));
@@ -17,21 +19,52 @@ const Home = lazy(() => import('./views/Home/Home'));
  */
 const App = () => {
   // fallback={<div className='loader-text'>Loading</div>}
+
+  // handle page loading
+  const [isLoading, setLoading] = useState(true);
+
+  // handle default route
+  const [isUserLoggedIn, setUserLoggedIn] = useState(false);
+
+  // check user loggedin status
+  useEffect(() => {
+    setLoading(true);
+    onAuthStateChanged(auth, (user) => {
+      setLoading(false);
+      if (user) {
+        const uid = user.uid;
+        if (uid !== null) {
+          setUserLoggedIn(true);
+        }
+      }
+    });
+  }, []);
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
   return (
-    <Suspense>
-      <Switch>
-        {/* auth routes */}
-        <Route exact path="/" component={() => <Login />} />
-        <Route exact path={routes.login} component={() => <Login />} />
-        <Route exact path={routes.signup} component={() => <Signup />} />
+    <>
+      {/* handle toast */}
+      <ToastContainer />
 
-        {/* home routes */}
-        <Route exact path={routes.home} component={() => <Home />} />
+      {/* app routes */}
+      <Suspense>
+        <Switch>
+          {/* auth routes */}
+          <Route exact path="/" component={() => isUserLoggedIn ? <Home /> : <Login />} />
+          <Route exact path={routes.login} component={() => <Login />} />
+          <Route exact path={routes.signup} component={() => <Signup />} />
 
-        {/* Error route */}
-        <Route exact path="*" component={() => <NotFound />} />
-      </Switch>
-    </Suspense>
+          {/* home routes */}
+          <Route exact path={routes.home} component={() => <Home />} />
+
+          {/* Error route */}
+          <Route exact path="*" component={() => <NotFound />} />
+        </Switch>
+      </Suspense>
+    </>
   );
 };
 

@@ -6,6 +6,7 @@ import ConfirmDialog from "./ConfirmDialog/ConfirmDialog";
 import EmptyCard from "./EmptyCard/EmptyCard";
 import TextInput from "./TextInput/TextInput";
 import Dropdown from "./Dropdown/Dropdown";
+import Loader from "./Loader/Loader";
 
 export {
     Layout,
@@ -16,4 +17,5 @@ export {
     EmptyCard,
     TextInput,
     Dropdown,
+    Loader,
 };

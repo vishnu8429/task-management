@@ -117,3 +117,10 @@ npm install yup --save
 npm install react-router-dom
 npm i --save-dev @types/react-router-dom
 
+## Firbase
+
+npm i firebase
+npm install -g firebase-tools
+
+
+

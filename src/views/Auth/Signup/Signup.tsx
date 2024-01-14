@@ -1,3 +1,7 @@
+import { useState } from 'react';
+// import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+// import { addDoc, collection } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
@@ -10,8 +14,9 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
-import { routes, images } from '../../../core';
-import { TextInput } from '../../../components';
+import { routes, images, auth } from '../../../core';
+import toastify from '../../../helpers/toastify';
+import { Loader, TextInput } from '../../../components';
 
 /**
  * Signup view
@@ -23,14 +28,26 @@ const Signup = (): JSX.Element => {
     // min 6 characters, 1 upper case letter, 1 lower case letter, 1 numeric digit.
     const passwordRegExp = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
 
+    // handle loader
+    const [isLoading, setLoading] = useState(false);
+
+    // avatar
+    // const [avatar, setAvatar] = useState("");
+
+    // State to store uploaded file
+    // const [file, setFile] = useState<any>("");
+
+    // handle upload progress
+    // const [progress, setProgress] = useState(0);
+
     // formik initial values
-    const initialValues = {
+    const [initialValues, setInitialValues] = useState({
         firstName: "",
         lastName: "",
         email: "",
         password: "",
         confirmPassword: "",
-    };
+    });
 
     // formik validation schema
     const validationSchema = Yup.object().shape({
@@ -53,10 +70,118 @@ const Signup = (): JSX.Element => {
             .required("Required"),
     });
 
+    // Handle file upload event and update state
+    // const _onChangeAvatar = (event: any) => {
+    //     setFile(event.target.files[0]);
+    // };
+
+    // handle avatar upload
+    // const onUploadAvatar = () => {
+    //     if (!file) {
+    //         alert("Please upload an avatar!");
+    //     }
+
+    //     const storageRef = ref(storage, `/files/${file.name}`);
+
+    //     // progress can be paused and resumed. It also exposes progress updates.
+    //     // Receives the storage reference and the file to upload.
+    //     const uploadTask = uploadBytesResumable(storageRef, file);
+
+    //     uploadTask.on("state_changed", (snapshot) => {
+    //         const progress = Math.round(
+    //             (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+    //         );
+
+    //         // update progress
+    //         setProgress(progress);
+    //     }, (err) => console.log(err), () => {
+
+    //         // download url
+    //         getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+    //             console.log(url);
+    //             setAvatar(url);
+    //         });
+    //     });
+    // };
+
     // do signup
-    const _doSignup = (data: any) => {
-        console.log('data', data);
-        window.location.href = routes.login;
+    const _doSignup = async (data: any) => {
+        setLoading(true);
+
+        // do create user with email and password
+        await createUserWithEmailAndPassword(auth, data.email, data.password)
+            .then((userCredential) => {
+                setLoading(false);
+
+                const user = userCredential.user;
+                // console.log(user);
+
+                // update user profile by add displayName and photoURL
+                updateProfile(user, {
+                    displayName: `${data.firstName} ${data.lastName}`
+                });
+
+                toastify("Congratulations! Your account has been successfully created. Welcome aboard!", "SUCCESS");
+
+                setInitialValues({
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: "",
+                });
+
+                setTimeout(() => {
+                    window.location.href = routes.login;
+                }, 2500);
+            })
+            .catch((error) => {
+                setLoading(false);
+
+                // const errorCode = error.code;
+                // const errorMessage = error.message;
+                // console.log(errorCode, errorMessage);
+
+                // handle error
+                toastify("Oops! Something went wrong. Please try again", "ERROR");
+            });
+
+        // try {
+        //     setLoading(true);
+
+        //     // todo
+        //     // check user is already exist to avoid duplication
+
+        //     const docRef = await addDoc(collection(db, "users"), {
+        //         firstName: data.firstName,
+        //         lastName: data.lastName,
+        //         image: avatar,
+        //         email: data.email,
+        //         password: data.password,
+        //     });
+
+        //     // handle success
+        //     if (docRef.id) {
+        //         toastify("Congratulations! Your account has been successfully created. Welcome aboard!", "SUCCESS");
+
+        //         setLoading(false);
+        //         setInitialValues({
+        //             firstName: "",
+        //             lastName: "",
+        //             email: "",
+        //             password: "",
+        //             confirmPassword: "",
+        //         });
+
+        //         setTimeout(() => {
+        //             window.location.href = routes.login;
+        //         }, 2500);
+        //     }
+        // } catch (e) {
+        //     // handle error
+        //     toastify("Oops! Something went wrong. Please try again", "ERROR");
+        //     setLoading(false);
+        // }
     };
 
     return (
@@ -89,86 +214,97 @@ const Signup = (): JSX.Element => {
                     alt="logo"
                 />
                 <Typography component="h1" variant="h5">Signup</Typography>
-                <Formik
-                    initialValues={initialValues}
-                    validationSchema={validationSchema}
-                    onSubmit={(values, { setSubmitting }) => {
-                        setTimeout(() => {
-                            setSubmitting(false);
-                            _doSignup(values);
-                        }, 400);
-                    }}
-                >
-                    {(formikProps) => (
-                        <Box
-                            noValidate
-                            sx={{ mt: 1 }}
-                            component="form"
-                            onSubmit={formikProps.handleSubmit}
-                        >
-                            <Grid container spacing={1}>
-                                <Grid item xs={12} sm={6}>
-                                    <TextInput
-                                        name="firstName"
-                                        label="First Name"
-                                        error={formikProps.errors.firstName}
-                                        value={formikProps.values.firstName}
-                                        onChange={formikProps.setFieldValue}
-                                    />
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <TextInput
-                                        name="lastName"
-                                        label="Last Name"
-                                        error={formikProps.errors.lastName}
-                                        value={formikProps.values.lastName}
-                                        onChange={formikProps.setFieldValue}
-                                    />
-                                </Grid>
-                            </Grid>
-                            <TextInput
-                                name="email"
-                                label="Email"
-                                error={formikProps.errors.email}
-                                value={formikProps.values.email}
-                                onChange={formikProps.setFieldValue}
-                            />
-                            <TextInput
-                                type='password'
-                                name="password"
-                                label="Password"
-                                error={formikProps.errors.password}
-                                value={formikProps.values.password}
-                                onChange={formikProps.setFieldValue}
-                            />
-                            <TextInput
-                                type='password'
-                                name="confirmPassword"
-                                label="Confirm Password"
-                                error={formikProps.errors.confirmPassword}
-                                value={formikProps.values.confirmPassword}
-                                onChange={formikProps.setFieldValue}
-                            />
-                            <Button
-                                fullWidth
-                                type="submit"
-                                variant="contained"
-                                sx={{
-                                    mt: 3,
-                                    mb: 2,
-                                    p: 1
-                                }}
-                            >
-                                Signup
-                            </Button>
-                            <Box sx={{ textAlign: "center" }}>
-                                <Link href={routes.login} variant="body2">
-                                    Already have an account? Sign in
-                                </Link>
-                            </Box>
+                {
+                    isLoading
+                        ? <Box sx={{ mt: 1, width: "350px" }}>
+                            <Loader />
                         </Box>
-                    )}
-                </Formik>
+                        : <Formik
+                            initialValues={initialValues}
+                            validationSchema={validationSchema}
+                            onSubmit={(values, { setSubmitting }) => {
+                                setTimeout(() => {
+                                    setSubmitting(false);
+                                    _doSignup(values);
+                                }, 400);
+                            }}
+                        >
+                            {(formikProps) => (
+                                <Box
+                                    noValidate
+                                    sx={{ mt: 1 }}
+                                    component="form"
+                                    onSubmit={formikProps.handleSubmit}
+                                >
+                                    <Grid container spacing={1}>
+                                        <Grid item xs={12} sm={6}>
+                                            <TextInput
+                                                name="firstName"
+                                                label="First Name"
+                                                error={formikProps.errors.firstName}
+                                                value={formikProps.values.firstName}
+                                                onChange={formikProps.setFieldValue}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <TextInput
+                                                name="lastName"
+                                                label="Last Name"
+                                                error={formikProps.errors.lastName}
+                                                value={formikProps.values.lastName}
+                                                onChange={formikProps.setFieldValue}
+                                            />
+                                        </Grid>
+                                    </Grid>
+                                    {/* <div>
+                                <input type="file" onChange={_onChangeAvatar} accept="/image/*" />
+                                <button onClick={onUploadAvatar}>Upload Avatar</button>
+                                <p>{progress} "% done"</p>
+                            </div> */}
+                                    <TextInput
+                                        name="email"
+                                        label="Email"
+                                        error={formikProps.errors.email}
+                                        value={formikProps.values.email}
+                                        onChange={formikProps.setFieldValue}
+                                    />
+                                    <TextInput
+                                        type='password'
+                                        name="password"
+                                        label="Password"
+                                        error={formikProps.errors.password}
+                                        value={formikProps.values.password}
+                                        onChange={formikProps.setFieldValue}
+                                    />
+                                    <TextInput
+                                        type='password'
+                                        name="confirmPassword"
+                                        label="Confirm Password"
+                                        error={formikProps.errors.confirmPassword}
+                                        value={formikProps.values.confirmPassword}
+                                        onChange={formikProps.setFieldValue}
+                                    />
+                                    <Button
+                                        fullWidth
+                                        type="submit"
+                                        variant="contained"
+                                        sx={{
+                                            mt: 3,
+                                            mb: 2,
+                                            p: 1
+                                        }}
+                                    >
+                                        Signup
+                                    </Button>
+                                    <Box sx={{ textAlign: "center" }}>
+                                        <Link href={routes.login} variant="body2">
+                                            Already have an account? Sign in
+                                        </Link>
+                                    </Box>
+                                </Box>
+                            )}
+                        </Formik>
+                }
             </Box>
         </Container>
     );
