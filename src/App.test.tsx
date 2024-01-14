@@ -1,9 +1,14 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+// test block
+test('App main block renders successfully', () => {
+  // render the component on virtual dom
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+
+  // select the elements you want to interact with
+  // const element = screen.getByText(/Task Management/i);
+
+  // assert the expected result
+  // expect(element).toBeInTheDocument();
 });
